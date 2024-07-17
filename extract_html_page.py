@@ -1,6 +1,9 @@
 import selectorlib
 import requests
 from datetime import datetime
+import sqlite3
+
+connection = sqlite3.connect("program.db")
 
 URL = "https://programmer100.pythonanywhere.com/"
 HEADERS = {
@@ -23,12 +26,20 @@ def extract(source):
 
 def store(extracted):
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open("data.txt", "a") as file:
-        file.write(f"{now} - {extracted}\n")
+    cursor = connection.cursor()
+    cursor.execute("INSERT INTO program VALUES (?,?)", (now, extracted))
+    connection.commit()
+
+def displaying():
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM program")
+    rows = cursor.fetchall()
+    for row in rows:
+        print(row)
 
 
 if __name__ == "__main__":
     source = scrape(URL)
     extracted = extract(source)
-    print(extracted)
     store(extracted)
+    displaying()
